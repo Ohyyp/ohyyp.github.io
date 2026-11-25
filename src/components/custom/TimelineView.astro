@@ -1,32 +1,37 @@
 ---
+import EmptyState from "@components/custom/EmptyState.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { getLocalizedPath, pickLocalized } from "@utils/i18n-utils";
 import { featurePagesConfig } from "@/config";
-import { timelineItems } from "@/data/timeline";
+import { type TimelineItem, timelineItems } from "@/data/timeline";
 import type { Locale } from "@/types/config";
 
 interface Props {
 	lang: Locale;
+	items?: TimelineItem[];
 }
 
-const { lang } = Astro.props;
+const { lang, items = timelineItems } = Astro.props;
+const sortedItems = [...items].sort((a, b) => b.date.localeCompare(a.date));
 ---
 {!featurePagesConfig.timeline ? (
-    <div class="card-base rounded-[var(--radius-large)] px-8 py-10 text-center onload-animation">
-        <p class="text-75 mb-4">{i18n(I18nKey.pageDisabled, lang)}</p>
-        <a href={getLocalizedPath("/", lang)} class="btn-regular inline-flex px-4 h-10 rounded-lg font-bold text-sm">
-            {i18n(I18nKey.backHome, lang)}
-        </a>
-    </div>
+    <EmptyState
+        message={i18n(I18nKey.pageDisabled, lang)}
+        actionLabel={i18n(I18nKey.backHome, lang)}
+        actionHref={getLocalizedPath("/", lang)}
+    />
 ) : (
     <div class="card-base rounded-[var(--radius-large)] px-7 py-6 onload-animation">
         <h1 class="text-2xl font-bold text-90 mb-6 relative before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)] before:absolute before:top-1.5 before:-left-4">
             {i18n(I18nKey.timeline, lang)}
         </h1>
 
+        {sortedItems.length === 0 ? (
+            <EmptyState message={i18n(I18nKey.noTimeline, lang)} card={false} />
+        ) : (
         <div class="relative pl-6 border-l-2 border-dashed border-black/15 dark:border-white/15 flex flex-col gap-6">
-            {timelineItems.map((item) => (
+            {sortedItems.map((item) => (
                 <div class="relative">
                     <div
                         class:list={[
@@ -53,5 +58,6 @@ const { lang } = Astro.props;
                 </div>
             ))}
         </div>
+        )}
     </div>
 )}

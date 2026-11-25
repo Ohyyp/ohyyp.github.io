@@ -23,6 +23,7 @@ const COLLAPSE_THRESHOLD = 5;
 const isCollapsed = categories.length >= COLLAPSE_THRESHOLD;
 ---
 
+{categories.length > 0 && (
 <WidgetLayout name={i18n(I18nKey.categories, lang)} id="categories" isCollapsed={isCollapsed} collapsedHeight={COLLAPSED_HEIGHT}
                 class={className} style={style}
 >
@@ -36,3 +37,4 @@ const isCollapsed = categories.length >= COLLAPSE_THRESHOLD;
         </ButtonLink>
     )}
 </WidgetLayout>
+)}

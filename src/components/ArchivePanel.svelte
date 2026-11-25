@@ -3,7 +3,7 @@ import { onMount } from "svelte";
 
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
-import { getLocalizedPostUrl } from "../utils/i18n-utils";
+import { getLocalizedPath, getLocalizedPostUrl } from "../utils/i18n-utils";
 import type { Locale } from "@/types/config";
 
 export let lang: Locale = "zh_CN";
@@ -15,6 +15,7 @@ const params = new URLSearchParams(window.location.search);
 tags = params.has("tag") ? params.getAll("tag") : [];
 categories = params.has("category") ? params.getAll("category") : [];
 const uncategorized = params.get("uncategorized");
+const hasFilter = tags.length > 0 || categories.length > 0 || Boolean(uncategorized);
 
 interface Post {
 	slug: string;
@@ -22,7 +23,7 @@ interface Post {
 		title: string;
 		tags: string[];
 		category?: string | null;
-		published: Date;
+		published: Date | string;
 	};
 }
 
@@ -32,10 +33,16 @@ interface Group {
 }
 
 let groups: Group[] = [];
+let ready = false;
 
-function formatDate(date: Date) {
-	const month = (date.getMonth() + 1).toString().padStart(2, "0");
-	const day = date.getDate().toString().padStart(2, "0");
+function toDate(value: Date | string): Date {
+	return value instanceof Date ? value : new Date(value);
+}
+
+function formatDate(dateInput: Date | string) {
+	const date = toDate(dateInput);
+	const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+	const day = date.getUTCDate().toString().padStart(2, "0");
 	return `${month}-${day}`;
 }
 
@@ -66,7 +73,7 @@ onMount(async () => {
 
 	const grouped = filteredPosts.reduce(
 		(acc, post) => {
-			const year = post.data.published.getFullYear();
+			const year = toDate(post.data.published).getUTCFullYear();
 			if (!acc[year]) {
 				acc[year] = [];
 			}
@@ -84,10 +91,24 @@ onMount(async () => {
 	groupedPostsArray.sort((a, b) => b.year - a.year);
 
 	groups = groupedPostsArray;
+	ready = true;
 });
 </script>
 
 <div class="card-base px-8 py-6">
+    {#if ready && groups.length === 0}
+        <div class="py-10 text-center flex flex-col items-center justify-center gap-4">
+            <p class="text-50 text-sm md:text-base">
+                {i18n(hasFilter ? I18nKey.noMatchingPosts : I18nKey.noPosts, lang)}
+            </p>
+            <a
+                href={getLocalizedPath(hasFilter ? "/archive/" : "/", lang)}
+                class="btn-regular inline-flex px-4 h-10 rounded-lg font-bold text-sm"
+            >
+                {i18n(hasFilter ? I18nKey.clearFilter : I18nKey.backHome, lang)}
+            </a>
+        </div>
+    {/if}
     {#each groups as group}
         <div>
             <div class="flex flex-row w-full items-center h-[3.75rem]">

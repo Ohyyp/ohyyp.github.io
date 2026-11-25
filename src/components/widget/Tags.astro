@@ -22,6 +22,7 @@ const COLLAPSED_HEIGHT = "7.5rem";
 
 const isCollapsed = tags.length >= 20;
 ---
+{tags.length > 0 && (
 <WidgetLayout name={i18n(I18nKey.tags, lang)} id="tags" isCollapsed={isCollapsed} collapsedHeight={COLLAPSED_HEIGHT} class={className} style={style}>
     <div class="flex gap-2 flex-wrap">
         {tags.map(t => (
@@ -31,3 +32,4 @@ const isCollapsed = tags.length >= 20;
         ))}
     </div>
 </WidgetLayout>
+)}

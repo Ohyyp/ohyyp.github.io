@@ -1,24 +1,41 @@
 ---
 import { getEntry, render } from "astro:content";
+import EmptyState from "@components/custom/EmptyState.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getLocalizedPath } from "@utils/i18n-utils";
+import { featurePagesConfig } from "@/config";
 
-const aboutPost = await getEntry("spec", "about-en");
-
-if (!aboutPost) {
-	throw new Error("About page content (about-en) not found");
-}
-
-const { Content } = await render(aboutPost);
+const locale = "en";
+const aboutPost = featurePagesConfig.about
+	? await getEntry("spec", "about-en")
+	: undefined;
+const hasBody = Boolean(aboutPost?.body?.trim());
+const rendered = aboutPost && hasBody ? await render(aboutPost) : null;
+const Content = rendered?.Content;
 ---
-<MainGridLayout title={i18n(I18nKey.about, "en")} description={i18n(I18nKey.about, "en")} lang="en">
-    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-        <div class="card-base z-10 px-9 py-6 relative w-full ">
-            <Markdown class="mt-2">
-                <Content />
-            </Markdown>
+<MainGridLayout title={i18n(I18nKey.about, locale)} description={i18n(I18nKey.about, locale)} lang={locale}>
+    {!featurePagesConfig.about ? (
+        <EmptyState
+            message={i18n(I18nKey.pageDisabled, locale)}
+            actionLabel={i18n(I18nKey.backHome, locale)}
+            actionHref={getLocalizedPath("/", locale)}
+        />
+    ) : !Content ? (
+        <EmptyState
+            message={i18n(I18nKey.noContent, locale)}
+            actionLabel={i18n(I18nKey.backHome, locale)}
+            actionHref={getLocalizedPath("/", locale)}
+        />
+    ) : (
+        <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+            <div class="card-base z-10 px-9 py-6 relative w-full ">
+                <Markdown class="mt-2">
+                    <Content />
+                </Markdown>
+            </div>
         </div>
-    </div>
+    )}
 </MainGridLayout>

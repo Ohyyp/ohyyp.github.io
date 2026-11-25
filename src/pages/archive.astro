@@ -1,13 +1,26 @@
 ---
 import ArchivePanel from "@components/ArchivePanel.svelte";
+import EmptyState from "@components/custom/EmptyState.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getLocalizedPath } from "@utils/i18n-utils";
+import { featurePagesConfig } from "@/config";
 import { getSortedPostsList } from "../utils/content-utils";
 
-const sortedPostsList = await getSortedPostsList("zh_CN");
+const sortedPostsList = featurePagesConfig.archive
+	? await getSortedPostsList("zh_CN")
+	: [];
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive, "zh_CN")} lang="zh_CN">
-    <ArchivePanel sortedPosts={sortedPostsList} lang="zh_CN" client:only="svelte"></ArchivePanel>
+    {!featurePagesConfig.archive ? (
+        <EmptyState
+            message={i18n(I18nKey.pageDisabled, "zh_CN")}
+            actionLabel={i18n(I18nKey.backHome, "zh_CN")}
+            actionHref={getLocalizedPath("/", "zh_CN")}
+        />
+    ) : (
+        <ArchivePanel sortedPosts={sortedPostsList} lang="zh_CN" client:only="svelte"></ArchivePanel>
+    )}
 </MainGridLayout>

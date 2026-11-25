@@ -12,6 +12,7 @@ interface Props {
 const lang: Locale = Astro.props.lang || "zh_CN";
 const config = profileConfig;
 const bio = pickLocalized(config.bioI18n, config.bio || "", lang);
+const avatarSrc = config.avatar?.trim() || "";
 ---
 <div class="card-base p-3">
     <a aria-label="Go to About Page" href={getLocalizedPath('/about/', lang)}
@@ -23,7 +24,13 @@ const bio = pickLocalized(config.bioI18n, config.bio || "", lang);
                   class="transition opacity-0 scale-90 group-hover:scale-100 group-hover:opacity-100 text-white text-5xl">
             </Icon>
         </div>
-        <ImageWrapper src={config.avatar || ""} alt="Profile Image of the Author" class="mx-auto lg:w-full h-full lg:mt-0 "></ImageWrapper>
+        {avatarSrc ? (
+            <ImageWrapper src={avatarSrc} alt="Profile Image of the Author" class="mx-auto lg:w-full h-full lg:mt-0 "></ImageWrapper>
+        ) : (
+            <div class="w-full aspect-square bg-black/[0.04] dark:bg-white/[0.06] flex items-center justify-center">
+                <Icon name="material-symbols:person-rounded" class="text-6xl text-black/20 dark:text-white/20" />
+            </div>
+        )}
     </a>
     <div class="px-2">
         <div class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition">{config.name}</div>

@@ -1,7 +1,10 @@
 ---
+import EmptyState from "@components/custom/EmptyState.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { getLocalizedPostUrl } from "@utils/i18n-utils";
 import type { Page } from "astro";
 import type { CollectionEntry } from "astro:content";
-import { getLocalizedPostUrl } from "@utils/i18n-utils";
 import type { Locale } from "@/types/config";
 import PostCard from "./PostCard.astro";
 
@@ -15,6 +18,9 @@ const { page, lang = "zh_CN" } = Astro.props;
 let delay = 0;
 const interval = 50;
 ---
+{page.data.length === 0 ? (
+    <EmptyState message={i18n(I18nKey.noPosts, lang)} />
+) : (
 <div id="post-list-container" data-layout="list" class="transition flex flex-col rounded-[var(--radius-large)] bg-[var(--card-bg)] py-1 md:py-0 md:bg-transparent md:gap-4 mb-4">
     {page.data.map((entry: CollectionEntry<"posts">) => (
         <PostCard
@@ -34,6 +40,7 @@ const interval = 50;
         ></PostCard>
     ))}
 </div>
+)}
 
 <style is:global>
 @media (min-width: 768px) {

@@ -6,9 +6,35 @@ import { PAGE_SIZE } from "@constants/constants";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getCategoryList, getSortedPosts } from "@utils/content-utils";
 import type { GetStaticPaths } from "astro";
+import type { CollectionEntry } from "astro:content";
 
 export const getStaticPaths = (async ({ paginate }) => {
 	const allBlogPosts = await getSortedPosts("zh_CN");
+	if (allBlogPosts.length === 0) {
+		return [
+			{
+				params: { page: undefined },
+				props: {
+					page: {
+						data: [] as CollectionEntry<"posts">[],
+						start: 0,
+						end: 0,
+						size: PAGE_SIZE,
+						total: 0,
+						currentPage: 1,
+						lastPage: 1,
+						url: {
+							current: "/",
+							prev: undefined,
+							next: undefined,
+							first: "/",
+							last: "/",
+						},
+					},
+				},
+			},
+		];
+	}
 	return paginate(allBlogPosts, { pageSize: PAGE_SIZE });
 }) satisfies GetStaticPaths;
 
@@ -18,7 +44,7 @@ const categories = await getCategoryList("zh_CN");
 ---
 
 <MainGridLayout lang="zh_CN">
-    <PostListToolbar categories={categories} lang="zh_CN" />
+    <PostListToolbar categories={categories} lang="zh_CN" hasPosts={len > 0} />
     <PostPage page={page} lang="zh_CN"></PostPage>
-    <Pagination class="mx-auto onload-animation" page={page} lang="zh_CN" style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
+    {page.lastPage > 1 && <Pagination class="mx-auto onload-animation" page={page} lang="zh_CN" style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>}
 </MainGridLayout>
