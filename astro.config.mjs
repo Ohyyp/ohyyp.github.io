@@ -108,6 +108,9 @@ export default defineConfig({
 		sitemap({
 			filter: (page) => {
 				const pathname = new URL(page).pathname;
+				if (pathname === "/404" || pathname === "/404/" || pathname === "/404.html") {
+					return false;
+				}
 				return !disabledRoutes.some(
 					(route) => pathname === route || pathname === `/en${route}`,
 				);
@@ -167,6 +170,7 @@ export default defineConfig({
 	},
 	vite: {
 		build: {
+			chunkSizeWarningLimit: 1600,
 			rollupOptions: {
 				onwarn(warning, warn) {
 					if (

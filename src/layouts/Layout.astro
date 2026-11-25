@@ -1,8 +1,10 @@
 ---
+import { getImage } from "astro:assets";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
+import defaultBannerImage from "@assets/images/demo-banner.png";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import MermaidInit from "@components/custom/MermaidInit.astro";
 import {
@@ -55,13 +57,19 @@ const isHomePage =
 	pathsEqual(Astro.url.pathname, url("/en/"));
 
 const configHue = siteConfig.themeColor.hue;
-if (!banner || typeof banner !== "string" || banner.trim() === "") {
-	banner = siteConfig.banner.src;
-}
-
-banner = siteConfig.banner.src;
-
 const enableBanner = siteConfig.banner.enable;
+
+let ogImageUrl: URL;
+if (banner && (banner.startsWith("http://") || banner.startsWith("https://"))) {
+	ogImageUrl = new URL(banner);
+} else {
+	const ogBanner = await getImage({
+		src: defaultBannerImage,
+		width: 1200,
+		format: "webp",
+	});
+	ogImageUrl = new URL(ogBanner.src, Astro.site);
+}
 
 let pageTitle: string;
 if (title) {
@@ -88,6 +96,7 @@ const zhAlternateUrl =
 	locale === "zh_CN" ? selfUrl : hasAlternate ? otherUrl : null;
 const enAlternateUrl =
 	locale === "en" ? selfUrl : hasAlternate ? otherUrl : null;
+const xDefaultUrl = zhAlternateUrl ?? enAlternateUrl;
 const rssUrl = new URL(getLocalizedPath("/rss.xml", locale), Astro.site);
 
 const bannerOffsetByPosition = {
@@ -115,6 +124,7 @@ const bannerOffset =
 		<meta property="og:url" content={Astro.url}>
 		<meta property="og:title" content={pageTitle}>
 		<meta property="og:description" content={description || pageTitle}>
+		<meta property="og:image" content={ogImageUrl}>
 		{setOGTypeArticle ? (
         <meta property="og:type" content="article" />
         ) : (
@@ -125,9 +135,11 @@ const bannerOffset =
 		<meta property="twitter:url" content={Astro.url}>
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || pageTitle}>
+		<meta name="twitter:image" content={ogImageUrl}>
 
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
+		<link rel="canonical" href={selfUrl} />
 		{favicons.map(favicon => (
 			<link rel="icon"
 				  href={favicon.src.startsWith('/') ? url(favicon.src) : favicon.src}
@@ -170,6 +182,7 @@ const bannerOffset =
 
 		{zhAlternateUrl && <link rel="alternate" hreflang="zh-CN" href={zhAlternateUrl}/>}
 		{enAlternateUrl && <link rel="alternate" hreflang="en" href={enAlternateUrl}/>}
+		{xDefaultUrl && <link rel="alternate" hreflang="x-default" href={xDefaultUrl}/>}
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={rssUrl}/>
 
 	</head>

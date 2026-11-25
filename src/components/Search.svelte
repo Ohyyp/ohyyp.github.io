@@ -15,6 +15,7 @@ let result: SearchResult[] = [];
 let isSearching = false;
 let pagefindLoaded = false;
 let initialized = false;
+let pagefindLoadingPromise: Promise<void> | null = null;
 
 const fakeResult: SearchResult[] = [
 	{
@@ -34,9 +35,28 @@ const fakeResult: SearchResult[] = [
 	},
 ];
 
+const ensurePagefindLoaded = async (): Promise<void> => {
+	if (!import.meta.env.PROD || pagefindLoaded) return;
+	if (!pagefindLoadingPromise && window.__loadPagefind) {
+		pagefindLoadingPromise = window.__loadPagefind().then(() => {
+			pagefindLoaded =
+				typeof window !== "undefined" &&
+				!!window.pagefind &&
+				typeof window.pagefind.search === "function";
+			initialized = true;
+		});
+	}
+	if (pagefindLoadingPromise) {
+		await pagefindLoadingPromise;
+	}
+};
+
 const togglePanel = () => {
 	const panel = document.getElementById("search-panel");
 	panel?.classList.toggle("float-panel-closed");
+	if (panel && !panel.classList.contains("float-panel-closed")) {
+		void ensurePagefindLoaded();
+	}
 };
 
 const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
@@ -66,6 +86,10 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 	try {
 		let searchResults: SearchResult[] = [];
 
+		if (import.meta.env.PROD && !pagefindLoaded) {
+			await ensurePagefindLoaded();
+		}
+
 		if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
 			const response = await window.pagefind.search(keyword);
 			searchResults = await Promise.all(
@@ -75,7 +99,6 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 			searchResults = fakeResult;
 		} else {
 			searchResults = [];
-			console.error("Pagefind is not available in production environment.");
 		}
 
 		result = searchResults;
@@ -96,34 +119,16 @@ onMount(() => {
 			typeof window !== "undefined" &&
 			!!window.pagefind &&
 			typeof window.pagefind.search === "function";
-		console.log("Pagefind status on init:", pagefindLoaded);
 		if (keywordDesktop) search(keywordDesktop, true);
 		if (keywordMobile) search(keywordMobile, false);
 	};
 
 	if (import.meta.env.DEV) {
-		console.log(
-			"Pagefind is not available in development mode. Using mock data.",
-		);
 		initializeSearch();
 	} else {
-		document.addEventListener("pagefindready", () => {
-			console.log("Pagefind ready event received.");
-			initializeSearch();
-		});
-		document.addEventListener("pagefindloaderror", () => {
-			console.warn(
-				"Pagefind load error event received. Search functionality will be limited.",
-			);
-			initializeSearch();
-		});
-
-		setTimeout(() => {
-			if (!initialized) {
-				console.log("Fallback: Initializing search after timeout.");
-				initializeSearch();
-			}
-		}, 2000);
+		document.addEventListener("pagefindready", initializeSearch);
+		document.addEventListener("pagefindloaderror", initializeSearch);
+		initializeSearch();
 	}
 });
 
@@ -145,7 +150,7 @@ $: if (initialized && keywordMobile) {
       dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
 ">
     <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
-    <input placeholder="{i18n(I18nKey.search, lang)}" bind:value={keywordDesktop} on:focus={() => search(keywordDesktop, true)}
+    <input placeholder="{i18n(I18nKey.search, lang)}" bind:value={keywordDesktop} on:focus={() => { void ensurePagefindLoaded(); search(keywordDesktop, true); }}
            class="transition-all pl-10 text-sm bg-transparent outline-0
          h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
     >
@@ -164,7 +169,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
       dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
   ">
         <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
-        <input placeholder="{i18n(I18nKey.search, lang)}" bind:value={keywordMobile}
+        <input placeholder="{i18n(I18nKey.search, lang)}" bind:value={keywordMobile} on:focus={() => { void ensurePagefindLoaded(); }}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
                focus:w-60 text-black/50 dark:text-white/50"
         >

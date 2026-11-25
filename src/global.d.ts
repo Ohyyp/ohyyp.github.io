@@ -10,6 +10,7 @@ declare global {
 				}>;
 			}>;
 		};
+		__loadPagefind?: () => Promise<void>;
 	}
 }
 

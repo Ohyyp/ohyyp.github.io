@@ -1,0 +1,67 @@
+---
+import { Image } from "astro:assets";
+import { url } from "@utils/url-utils";
+
+interface Props {
+	id?: string;
+	src: string;
+	class?: string;
+	alt?: string;
+	position?: string;
+}
+
+const {
+	id,
+	src,
+	class: className,
+	alt = "",
+	position = "center",
+} = Astro.props;
+
+const isExternalOrPublic =
+	src.startsWith("/") ||
+	src.startsWith("http://") ||
+	src.startsWith("https://") ||
+	src.startsWith("data:");
+
+let img: ImageMetadata | undefined;
+if (!isExternalOrPublic && src.trim() !== "") {
+	const files = import.meta.glob<ImageMetadata>("../../assets/images/*", {
+		import: "default",
+	});
+	const normalized = `../../${src.replace(/^\/+/, "")}`;
+	const loader = files[normalized];
+	if (loader) {
+		img = await loader();
+	}
+}
+
+const imageClass = "w-full h-full object-cover";
+const imageStyle = `object-position: ${position}`;
+---
+<div id={id} class:list={[className, "overflow-hidden relative"]}>
+    <div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>
+    {img ? (
+        <Image
+            src={img}
+            alt={alt}
+            widths={[640, 1024, 1536, 1920]}
+            sizes="100vw"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+            class={imageClass}
+            style={imageStyle}
+        />
+    ) : (
+        <img
+            src={src.startsWith("/") ? url(src) : src}
+            alt={alt}
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+            class={imageClass}
+            style={imageStyle}
+        />
+    )}
+</div>
