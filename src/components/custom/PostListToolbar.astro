@@ -1,0 +1,115 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import type { Category } from "@utils/content-utils";
+import { getLocalizedPath } from "@utils/i18n-utils";
+import { Icon } from "astro-icon/components";
+import { postFeatureConfig } from "@/config";
+import type { Locale } from "@/types/config";
+
+interface Props {
+	categories: Category[];
+	lang: Locale;
+}
+
+const { categories, lang } = Astro.props;
+const showToolbar =
+	postFeatureConfig.categoryBar || postFeatureConfig.listLayoutSwitch;
+---
+{showToolbar && (
+    <div class="card-base rounded-[var(--radius-large)] px-4 py-3 mb-4 flex flex-wrap items-center justify-between gap-3 onload-animation">
+        {postFeatureConfig.categoryBar ? (
+            <div class="flex flex-wrap items-center gap-1.5">
+                <a
+                    href={getLocalizedPath("/", lang)}
+                    class="btn-regular h-8 px-3 rounded-lg text-xs font-bold active:scale-95"
+                >
+                    {i18n(I18nKey.allCategories, lang)}
+                </a>
+                {categories.map((cat) => (
+                    <a
+                        href={cat.url}
+                        class="btn-plain h-8 px-3 rounded-lg text-xs font-medium text-75 active:scale-95 gap-1.5"
+                    >
+                        <span>{cat.name}</span>
+                        <span class="text-30">{cat.count}</span>
+                    </a>
+                ))}
+            </div>
+        ) : <div />}
+
+        {postFeatureConfig.listLayoutSwitch && (
+            <div class="flex items-center gap-1 ml-auto" role="group" aria-label="Post list layout">
+                <button
+                    type="button"
+                    data-layout-btn="list"
+                    aria-label={i18n(I18nKey.listView, lang)}
+                    title={i18n(I18nKey.listView, lang)}
+                    class="btn-plain h-8 w-8 rounded-lg active:scale-90 text-75"
+                >
+                    <Icon name="material-symbols:view-agenda-outline" class="text-lg" />
+                </button>
+                <button
+                    type="button"
+                    data-layout-btn="grid"
+                    aria-label={i18n(I18nKey.gridView, lang)}
+                    title={i18n(I18nKey.gridView, lang)}
+                    class="btn-plain h-8 w-8 rounded-lg active:scale-90 text-75"
+                >
+                    <Icon name="material-symbols:grid-view-outline" class="text-lg" />
+                </button>
+            </div>
+        )}
+    </div>
+)}
+
+<script>
+	declare global {
+		interface Window {
+			__postLayoutBound?: boolean;
+		}
+	}
+
+	const STORAGE_KEY = "post-list-layout";
+
+	function applyPostLayout(mode: string) {
+		const normalized = mode === "grid" ? "grid" : "list";
+		const container = document.getElementById("post-list-container");
+		if (container) {
+			container.setAttribute("data-layout", normalized);
+		}
+		document.querySelectorAll<HTMLButtonElement>("[data-layout-btn]").forEach((btn) => {
+			const active = btn.getAttribute("data-layout-btn") === normalized;
+			btn.classList.toggle("text-[var(--primary)]", active);
+			btn.classList.toggle("bg-[var(--btn-plain-bg-hover)]", active);
+		});
+	}
+
+	function initPostLayoutToolbar() {
+		const saved = localStorage.getItem(STORAGE_KEY) || "list";
+		applyPostLayout(saved);
+		document.querySelectorAll<HTMLButtonElement>("[data-layout-btn]").forEach((btn) => {
+			btn.onclick = () => {
+				const next = btn.getAttribute("data-layout-btn") || "list";
+				localStorage.setItem(STORAGE_KEY, next);
+				applyPostLayout(next);
+			};
+		});
+	}
+
+	initPostLayoutToolbar();
+
+	if (!window.__postLayoutBound) {
+		window.__postLayoutBound = true;
+		const bindSwup = () => {
+			window.swup?.hooks?.on("page:view", () => {
+				initPostLayoutToolbar();
+			});
+		};
+		if (window.swup?.hooks) {
+			bindSwup();
+		} else {
+			document.addEventListener("swup:enable", bindSwup);
+		}
+	}
+</script>

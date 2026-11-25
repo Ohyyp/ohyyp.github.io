@@ -1,0 +1,57 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { getLocalizedPath, pickLocalized } from "@utils/i18n-utils";
+import { featurePagesConfig } from "@/config";
+import { timelineItems } from "@/data/timeline";
+import type { Locale } from "@/types/config";
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+---
+{!featurePagesConfig.timeline ? (
+    <div class="card-base rounded-[var(--radius-large)] px-8 py-10 text-center onload-animation">
+        <p class="text-75 mb-4">{i18n(I18nKey.pageDisabled, lang)}</p>
+        <a href={getLocalizedPath("/", lang)} class="btn-regular inline-flex px-4 h-10 rounded-lg font-bold text-sm">
+            {i18n(I18nKey.backHome, lang)}
+        </a>
+    </div>
+) : (
+    <div class="card-base rounded-[var(--radius-large)] px-7 py-6 onload-animation">
+        <h1 class="text-2xl font-bold text-90 mb-6 relative before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)] before:absolute before:top-1.5 before:-left-4">
+            {i18n(I18nKey.timeline, lang)}
+        </h1>
+
+        <div class="relative pl-6 border-l-2 border-dashed border-black/15 dark:border-white/15 flex flex-col gap-6">
+            {timelineItems.map((item) => (
+                <div class="relative">
+                    <div
+                        class:list={[
+                            "absolute -left-[1.95rem] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-[var(--card-bg)]",
+                            item.highlight
+                                ? "bg-[var(--primary)] ring-4 ring-[var(--primary)]/20"
+                                : "bg-black/30 dark:bg-white/30",
+                        ]}
+                    />
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <span class="text-xs font-mono font-bold text-[var(--primary)]">
+                            {item.date}
+                        </span>
+                        <span class="px-2 py-0.5 rounded-md text-xs bg-black/[0.04] dark:bg-white/[0.08] text-50">
+                            {pickLocalized(item.category, "", lang)}
+                        </span>
+                    </div>
+                    <h2 class="text-base font-bold text-90 mb-1">
+                        {pickLocalized(item.title, "", lang)}
+                    </h2>
+                    <p class="text-sm text-75 leading-relaxed">
+                        {pickLocalized(item.description, "", lang)}
+                    </p>
+                </div>
+            ))}
+        </div>
+    </div>
+)}

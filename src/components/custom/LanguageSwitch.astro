@@ -1,0 +1,56 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { Icon } from "astro-icon/components";
+import type { Locale } from "@/types/config";
+
+interface Props {
+	lang: Locale;
+	alternateUrl: string;
+}
+
+const { lang, alternateUrl } = Astro.props;
+const label = lang === "zh_CN" ? "EN" : "中";
+---
+<a
+    id="language-switch"
+    href={alternateUrl}
+    data-no-swup
+    aria-label={i18n(I18nKey.switchLanguage, lang)}
+    title={i18n(I18nKey.switchLanguage, lang)}
+    class="btn-plain scale-animation rounded-lg h-11 px-2.5 gap-1 font-bold text-sm active:scale-90"
+>
+    <Icon name="material-symbols:translate-rounded" class="text-[1.15rem]" />
+    <span>{label}</span>
+</a>
+
+<script>
+	declare global {
+		interface Window {
+			__languageSwitchBound?: boolean;
+		}
+	}
+
+	function syncLanguageSwitch() {
+		const link = document.getElementById("language-switch") as HTMLAnchorElement | null;
+		const wrapper = document.getElementById("content-wrapper");
+		const nextHref = wrapper?.getAttribute("data-alternate-url");
+		if (link && nextHref) {
+			link.href = nextHref;
+		}
+	}
+
+	syncLanguageSwitch();
+
+	if (!window.__languageSwitchBound) {
+		window.__languageSwitchBound = true;
+		const bindSwup = () => {
+			window.swup?.hooks?.on("page:view", syncLanguageSwitch);
+		};
+		if (window.swup?.hooks) {
+			bindSwup();
+		} else {
+			document.addEventListener("swup:enable", bindSwup);
+		}
+	}
+</script>

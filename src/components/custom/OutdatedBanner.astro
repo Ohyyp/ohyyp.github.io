@@ -1,0 +1,39 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { formatDateToYYYYMMDD } from "@utils/date-utils";
+import { Icon } from "astro-icon/components";
+import { postFeatureConfig } from "@/config";
+import type { Locale } from "@/types/config";
+
+interface Props {
+	published: Date;
+	updated?: Date;
+	lang: Locale;
+}
+
+const { published, updated, lang } = Astro.props;
+const refDate = updated ?? published;
+const daysSince = Math.max(
+	0,
+	Math.floor((Date.now() - refDate.getTime()) / (1000 * 60 * 60 * 24)),
+);
+const isOutdated =
+	postFeatureConfig.outdatedThresholdDays > 0 &&
+	daysSince >= postFeatureConfig.outdatedThresholdDays;
+const hasUpdate =
+	postFeatureConfig.showLastModified &&
+	updated !== undefined &&
+	updated.getTime() !== published.getTime();
+---
+{isOutdated ? (
+    <div class="mb-5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200 flex items-start gap-2.5 onload-animation">
+        <Icon name="material-symbols:schedule-outline-rounded" class="text-lg shrink-0 mt-0.5 text-amber-600 dark:text-amber-300" />
+        <span>{i18n(I18nKey.outdatedWarning, lang).replace("{days}", String(daysSince))}</span>
+    </div>
+) : hasUpdate ? (
+    <div class="mb-5 rounded-xl bg-black/[0.03] dark:bg-white/[0.05] px-4 py-2.5 text-xs text-50 flex items-center gap-2 onload-animation">
+        <Icon name="material-symbols:edit-calendar-outline-rounded" class="text-base text-[var(--primary)]" />
+        <span>{i18n(I18nKey.lastUpdated, lang)} {formatDateToYYYYMMDD(updated)}</span>
+    </div>
+) : null}

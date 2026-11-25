@@ -1,0 +1,59 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { getLocalizedPath, pickLocalized } from "@utils/i18n-utils";
+import { Icon } from "astro-icon/components";
+import { featurePagesConfig } from "@/config";
+import { moments } from "@/data/moments";
+import type { Locale } from "@/types/config";
+
+interface Props {
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+---
+{!featurePagesConfig.moments ? (
+    <div class="card-base rounded-[var(--radius-large)] px-8 py-10 text-center onload-animation">
+        <p class="text-75 mb-4">{i18n(I18nKey.pageDisabled, lang)}</p>
+        <a href={getLocalizedPath("/", lang)} class="btn-regular inline-flex px-4 h-10 rounded-lg font-bold text-sm">
+            {i18n(I18nKey.backHome, lang)}
+        </a>
+    </div>
+) : (
+    <div class="flex flex-col gap-4 onload-animation">
+        <div class="card-base rounded-[var(--radius-large)] px-7 py-6 flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-90 relative before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)] before:absolute before:top-1.5 before:-left-4">
+                {i18n(I18nKey.moments, lang)}
+            </h1>
+            <span class="text-sm text-50">
+                {moments.length} {i18n(I18nKey.totalMoments, lang)}
+            </span>
+        </div>
+
+        {moments.length === 0 ? (
+            <div class="card-base rounded-[var(--radius-large)] px-7 py-10 text-center text-50">
+                {i18n(I18nKey.noMoments, lang)}
+            </div>
+        ) : (
+            moments.map((moment) => (
+                <article class="card-base rounded-[var(--radius-large)] px-7 py-5">
+                    <div class="flex items-center gap-2 text-xs text-50 mb-2.5">
+                        <Icon name="material-symbols:calendar-today-outline-rounded" class="text-base text-[var(--primary)]" />
+                        <time>{moment.date}</time>
+                    </div>
+                    <p class="text-90 leading-relaxed mb-3">
+                        {pickLocalized(moment.content, "", lang)}
+                    </p>
+                    <div class="flex flex-wrap gap-1.5">
+                        {moment.tags.map((tag) => (
+                            <span class="px-2 py-0.5 rounded-md text-xs bg-black/[0.04] dark:bg-white/[0.08] text-50">
+                                #{tag}
+                            </span>
+                        ))}
+                    </div>
+                </article>
+            ))
+        )}
+    </div>
+)}

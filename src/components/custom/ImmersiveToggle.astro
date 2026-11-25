@@ -1,0 +1,113 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { Icon } from "astro-icon/components";
+import type { Locale } from "@/types/config";
+
+interface Props {
+	lang: Locale;
+	isPostPage?: boolean;
+}
+
+const { lang, isPostPage = false } = Astro.props;
+const enterLabel = i18n(I18nKey.immersiveMode, lang);
+const exitLabel = i18n(I18nKey.exitImmersive, lang);
+---
+<button
+    id="immersive-toggle-btn"
+    type="button"
+    data-enter-label={enterLabel}
+    data-exit-label={exitLabel}
+    aria-label={enterLabel}
+    title={enterLabel}
+    class:list={[
+        isPostPage ? "hidden lg:flex" : "hidden",
+        "fixed bottom-24 right-6 z-40 btn-card h-11 px-3.5 rounded-xl items-center gap-2 text-sm font-bold text-[var(--primary)] shadow-lg active:scale-95 transition",
+    ]}
+>
+    <Icon name="material-symbols:chrome-reader-mode-outline" class="text-xl" />
+    <span id="immersive-toggle-text">{enterLabel}</span>
+</button>
+
+<style is:global>
+	body.immersive-reading #sidebar,
+	body.immersive-reading #banner-wrapper {
+		display: none !important;
+	}
+	body.immersive-reading #top-row {
+		height: auto !important;
+	}
+	body.immersive-reading #main-grid {
+		grid-template-columns: minmax(0, 1fr) !important;
+		max-width: 56rem !important;
+		margin-left: auto !important;
+		margin-right: auto !important;
+	}
+	body.immersive-reading.lg\:is-home #main-grid {
+		transform: none !important;
+	}
+	body.immersive-reading > div[style*="top:"] {
+		top: 5.5rem !important;
+	}
+</style>
+
+<script>
+	declare global {
+		interface Window {
+			__immersiveBound?: boolean;
+		}
+	}
+
+	function syncImmersiveLabel() {
+		const btn = document.getElementById("immersive-toggle-btn");
+		const txt = document.getElementById("immersive-toggle-text");
+		if (!btn || !txt) return;
+		const isImmersive = document.body.classList.contains("immersive-reading");
+		const nextLabel = isImmersive
+			? btn.getAttribute("data-exit-label") || "Exit Focus"
+			: btn.getAttribute("data-enter-label") || "Focus Mode";
+		txt.textContent = nextLabel;
+		btn.setAttribute("aria-label", nextLabel);
+		btn.setAttribute("title", nextLabel);
+	}
+
+	function bindImmersiveBtn() {
+		const btn = document.getElementById("immersive-toggle-btn");
+		if (!btn) return;
+		const isPost =
+			document.getElementById("content-wrapper")?.getAttribute("data-is-post") ===
+			"true";
+		if (isPost) {
+			btn.classList.add("lg:flex");
+		} else {
+			btn.classList.remove("lg:flex");
+			document.body.classList.remove("immersive-reading");
+		}
+		btn.onclick = () => {
+			document.body.classList.toggle("immersive-reading");
+			syncImmersiveLabel();
+		};
+		syncImmersiveLabel();
+	}
+
+	bindImmersiveBtn();
+
+	if (!window.__immersiveBound) {
+		window.__immersiveBound = true;
+		const bindSwup = () => {
+			window.swup?.hooks?.on("visit:start", (visit: { to: { url: string } }) => {
+				if (!visit.to.url.includes("/posts/")) {
+					document.body.classList.remove("immersive-reading");
+				}
+			});
+			window.swup?.hooks?.on("page:view", () => {
+				bindImmersiveBtn();
+			});
+		};
+		if (window.swup?.hooks) {
+			bindSwup();
+		} else {
+			document.addEventListener("swup:enable", bindSwup);
+		}
+	}
+</script>
