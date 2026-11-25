@@ -1,0 +1,49 @@
+---
+import type { Page } from "astro";
+import type { CollectionEntry } from "astro:content";
+import { getLocalizedPostUrl } from "@utils/i18n-utils";
+import type { Locale } from "@/types/config";
+import PostCard from "./PostCard.astro";
+
+interface Props {
+	page: Page<CollectionEntry<"posts">>;
+	lang?: Locale;
+}
+
+const { page, lang = "zh_CN" } = Astro.props;
+
+let delay = 0;
+const interval = 50;
+---
+<div id="post-list-container" data-layout="list" class="transition flex flex-col rounded-[var(--radius-large)] bg-[var(--card-bg)] py-1 md:py-0 md:bg-transparent md:gap-4 mb-4">
+    {page.data.map((entry: CollectionEntry<"posts">) => (
+        <PostCard
+                entry={entry}
+                title={entry.data.title}
+                tags={entry.data.tags}
+                category={entry.data.category}
+                published={entry.data.published}
+                updated={entry.data.updated}
+                url={getLocalizedPostUrl(entry.slug, lang)}
+                image={entry.data.image}
+                description={entry.data.description}
+                draft={entry.data.draft}
+                lang={lang}
+                class:list="onload-animation"
+                style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
+        ></PostCard>
+    ))}
+</div>
+
+<style is:global>
+@media (min-width: 768px) {
+	#post-list-container[data-layout="grid"] {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+	}
+	#post-list-container[data-layout="grid"] > .post-divider {
+		display: none;
+	}
+}
+</style>
