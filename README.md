@@ -23,13 +23,16 @@ Prerequisites: Node.js (`>=20` / `22` / `24`) and `pnpm` (enable via `corepack e
 pnpm install --frozen-lockfile   # Install dependencies
 pnpm dev                         # Start local dev server (http://localhost:4321)
 pnpm check                       # Run Astro & TypeScript checks
+pnpm test                        # Run unit tests
+pnpm test:components             # Run Astro component tests
 pnpm build                       # Build static site + Pagefind search index to ./dist/
+pnpm test:integration            # Verify built ./dist/ outputs and internal links
 pnpm preview                     # Preview production build (required for Pagefind search)
 ```
 
-## Deployment
+## Deployment & CI/CD
 
-Pushes to `main` trigger `.github/workflows/deploy.yml` (`withastro/action@v6` + `actions/deploy-pages@v4`). Ensure **Settings → Pages → Source** is set to **GitHub Actions** on GitHub.
+Pull requests to `main` run `.github/workflows/ci.yml` (`check`, unit tests, component tests, build, and `dist/` integration tests). Pushes to `main` and a weekly schedule trigger `.github/workflows/deploy.yml`, reusing `.github/workflows/ci.yml` before deploying to GitHub Pages. Ensure **Settings → Pages → Source** is set to **GitHub Actions** on GitHub.
 
 ## License & Attribution
 
