@@ -51,6 +51,14 @@ enum I18nKey {
 	backHome = "backHome",
 	totalMoments = "totalMoments",
 	noMoments = "noMoments",
+	noPosts = "noPosts",
+	noMatchingPosts = "noMatchingPosts",
+	clearFilter = "clearFilter",
+	noProjects = "noProjects",
+	noTimeline = "noTimeline",
+	noContent = "noContent",
+	notFoundTitle = "notFoundTitle",
+	notFoundDescription = "notFoundDescription",
 }
 
 export default I18nKey;

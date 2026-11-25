@@ -1,0 +1,33 @@
+---
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getLocalizedPath } from "@utils/i18n-utils";
+import { Icon } from "astro-icon/components";
+---
+<MainGridLayout title="404" description={i18n(I18nKey.notFoundTitle, "zh_CN")} lang="zh_CN" hasAlternate={false}>
+    <meta slot="head" name="robots" content="noindex" />
+    <div class="card-base rounded-[var(--radius-large)] px-8 py-14 text-center onload-animation">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--btn-regular-bg)] text-[var(--primary)] mb-4">
+            <Icon name="material-symbols:explore-off-outline-rounded" class="text-4xl" />
+        </div>
+        <div class="text-5xl font-bold text-[var(--primary)] mb-3">404</div>
+        <h1 class="text-2xl font-bold text-90 mb-2">
+            {i18n(I18nKey.notFoundTitle, "zh_CN")} / {i18n(I18nKey.notFoundTitle, "en")}
+        </h1>
+        <p class="text-50 text-sm mb-1">
+            {i18n(I18nKey.notFoundDescription, "zh_CN")}
+        </p>
+        <p class="text-50 text-sm mb-6">
+            {i18n(I18nKey.notFoundDescription, "en")}
+        </p>
+        <div class="flex flex-wrap justify-center gap-3">
+            <a href={getLocalizedPath("/", "zh_CN")} class="btn-regular px-4 h-10 rounded-lg font-bold text-sm">
+                {i18n(I18nKey.backHome, "zh_CN")}
+            </a>
+            <a href={getLocalizedPath("/", "en")} class="btn-plain px-4 h-10 rounded-lg font-bold text-sm text-[var(--primary)]">
+                {i18n(I18nKey.backHome, "en")}
+            </a>
+        </div>
+    </div>
+</MainGridLayout>

@@ -55,4 +55,13 @@ export const en: FullTranslation = {
 	[Key.backHome]: "Back to Home",
 	[Key.totalMoments]: "notes",
 	[Key.noMoments]: "No moments yet.",
+	[Key.noPosts]: "No posts yet",
+	[Key.noMatchingPosts]: "No matching posts found",
+	[Key.clearFilter]: "Clear filter",
+	[Key.noProjects]: "No projects yet",
+	[Key.noTimeline]: "Nothing here yet",
+	[Key.noContent]: "No content available yet",
+	[Key.notFoundTitle]: "Page Not Found",
+	[Key.notFoundDescription]:
+		"The page you are looking for may have been moved or does not exist.",
 };

@@ -54,4 +54,12 @@ export const zh_CN: FullTranslation = {
 	[Key.backHome]: "返回主页",
 	[Key.totalMoments]: "条记录",
 	[Key.noMoments]: "暂无内容。",
+	[Key.noPosts]: "暂无文章",
+	[Key.noMatchingPosts]: "没有找到符合条件的文章",
+	[Key.clearFilter]: "清除筛选",
+	[Key.noProjects]: "暂无项目",
+	[Key.noTimeline]: "暂无动态",
+	[Key.noContent]: "暂无内容",
+	[Key.notFoundTitle]: "页面不存在",
+	[Key.notFoundDescription]: "你访问的页面可能已被移除或地址有误。",
 };
