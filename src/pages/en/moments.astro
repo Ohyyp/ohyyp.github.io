@@ -1,0 +1,9 @@
+---
+import MomentsView from "@components/custom/MomentsView.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+---
+<MainGridLayout title={i18n(I18nKey.moments, "en")} description={i18n(I18nKey.moments, "en")} lang="en">
+    <MomentsView lang="en" />
+</MainGridLayout>

@@ -1,0 +1,9 @@
+---
+import TimelineView from "@components/custom/TimelineView.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+---
+<MainGridLayout title={i18n(I18nKey.timeline, "zh_CN")} description={i18n(I18nKey.timeline, "zh_CN")} lang="zh_CN">
+    <TimelineView lang="zh_CN" />
+</MainGridLayout>
